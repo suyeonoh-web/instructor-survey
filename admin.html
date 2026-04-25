@@ -149,11 +149,9 @@ function tryLogin() {
   const pw = document.getElementById('pwInput').value;
   document.getElementById('loginErr').textContent = '';
   fetch(getEndpoint(pw))
-    .then(r => {
-      if (r.status === 401) throw new Error('wrong');
-      return r.json();
-    })
+    .then(r => r.json())
     .then(data => {
+      if (!Array.isArray(data)) throw new Error('wrong');
       savedPw = pw;
       allData = data;
       document.getElementById('loginScreen').style.display = 'none';
@@ -162,7 +160,7 @@ function tryLogin() {
     })
     .catch(e => {
       document.getElementById('loginErr').textContent =
-        e.message === 'wrong' ? '비밀번호가 올바르지 않아요.' : '서버에 연결할 수 없어요. 서버가 실행 중인지 확인하세요.';
+        e.message === 'wrong' ? '비밀번호가 올바르지 않아요.' : '연결 오류: ' + e.message;
     });
 }
 
