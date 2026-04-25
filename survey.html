@@ -4,6 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>강사 섭외 경험 설문</title>
+<script src="config.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet"/>
 <style>
@@ -813,14 +814,18 @@ function submit() {
       <p>잠깐만요!</p>
     </div>`;
 
-  fetch('/api/survey/submit', {
+  const ep = (window.SURVEY_ENDPOINT && window.SURVEY_ENDPOINT !== 'YOUR_APPS_SCRIPT_URL_HERE')
+    ? window.SURVEY_ENDPOINT : '/api/survey/submit';
+  const isGas = ep.includes('script.google.com');
+
+  fetch(ep, {
     method: 'POST',
-    headers: {'Content-Type':'application/json'},
+    // Apps Script는 Content-Type 없이 보내야 CORS preflight 없음
+    ...(isGas ? {} : {headers: {'Content-Type':'application/json'}}),
     body: JSON.stringify(payload),
   })
-  .then(r => r.json())
   .then(() => showDone())
-  .catch(() => showDone()); // 로컬 서버 없어도 완료 화면 표시
+  .catch(() => showDone());
 }
 
 function showDone() {

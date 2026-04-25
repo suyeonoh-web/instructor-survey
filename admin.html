@@ -4,6 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>설문 관리자 — 강사 섭외 리서치</title>
+<script src="config.js"></script>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   :root{
@@ -136,10 +137,18 @@
 let savedPw = '';
 let allData = [];
 
+function getEndpoint(pw) {
+  const ep = (window.SURVEY_ENDPOINT && window.SURVEY_ENDPOINT !== 'YOUR_APPS_SCRIPT_URL_HERE')
+    ? window.SURVEY_ENDPOINT : '/api/survey/responses';
+  return ep.includes('script.google.com')
+    ? `${ep}?pw=${encodeURIComponent(pw)}`
+    : `/api/survey/responses?pw=${encodeURIComponent(pw)}`;
+}
+
 function tryLogin() {
   const pw = document.getElementById('pwInput').value;
   document.getElementById('loginErr').textContent = '';
-  fetch(`/api/survey/responses?pw=${encodeURIComponent(pw)}`)
+  fetch(getEndpoint(pw))
     .then(r => {
       if (r.status === 401) throw new Error('wrong');
       return r.json();
@@ -158,7 +167,7 @@ function tryLogin() {
 }
 
 function loadData() {
-  fetch(`/api/survey/responses?pw=${encodeURIComponent(savedPw)}`)
+  fetch(getEndpoint(savedPw))
     .then(r => r.json())
     .then(data => { allData = data; renderAll(data); });
 }
