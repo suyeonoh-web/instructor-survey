@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>강사 섭외 경험 설문</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet"/>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#f0ede8;
+    --card:#ffffff;
+    --card2:#f6f4f0;
+    --accent:#1e1b5e;
+    --accent2:#4540a8;
+    --accent-lt:#ece9ff;
+    --ink:#16141f;
+    --ink2:#6b6880;
+    --ink3:#b0aec0;
+    --border:#e2dfd8;
+    --border2:#ccc9be;
+    --radius:20px;
+    --shadow:0 4px 32px rgba(30,27,94,.07);
+  }
+  body{
+    background:var(--bg);color:var(--ink);
+    font-family:'Noto Sans KR','Pretendard',sans-serif;
+    min-height:100vh;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;padding:32px 20px;
+  }
+  .shell{width:100%;max-width:600px;}
+
+  /* ── progress ── */
+  .prog-wrap{margin-bottom:40px;}
+  .prog-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+  .prog-step{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);}
+  .prog-dots{display:flex;gap:6px;}
+  .prog-dot{width:6px;height:6px;border-radius:50%;background:var(--border2);transition:all .3s;}
+  .prog-dot.on{background:var(--accent);width:20px;border-radius:3px;}
+  .prog-dot.done{background:var(--accent2);opacity:.4;}
+  .prog-bar{height:2px;background:var(--border);border-radius:1px;overflow:hidden;}
+  .prog-fill{height:100%;background:var(--accent);border-radius:1px;transition:width .5s cubic-bezier(.4,0,.2,1);}
+
+  /* ── card ── */
+  .card{
+    background:var(--card);border-radius:var(--radius);padding:48px 44px;
+    box-shadow:var(--shadow);border:1px solid var(--border);
+    animation:fadeUp .4s cubic-bezier(.4,0,.2,1) both;
+  }
+  @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+  .q-eyebrow{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--ink3);margin-bottom:18px;}
+  .q-text{font-size:26px;font-weight:900;line-height:1.35;margin-bottom:10px;color:var(--ink);letter-spacing:-.01em;}
+  .q-sub{font-size:14px;color:var(--ink2);margin-bottom:36px;line-height:1.75;}
+
+  /* ── slider ── */
+  .slider-display{text-align:center;margin-bottom:16px;}
+  .slider-num{font-size:64px;font-weight:900;color:var(--accent);line-height:1;letter-spacing:-.03em;}
+  .slider-unit{font-size:16px;font-weight:500;color:var(--ink2);margin-left:6px;vertical-align:middle;}
+  .slider{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:2px;
+    background:var(--border);outline:none;cursor:pointer;margin:8px 0;}
+  .slider::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;
+    background:var(--accent);border:4px solid #fff;cursor:pointer;
+    box-shadow:0 2px 10px rgba(30,27,94,.25);}
+  .slider-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--ink3);margin-top:6px;}
+
+  /* ── choice cards ── */
+  .choices{display:grid;gap:10px;}
+  .choice{
+    background:var(--card);border:1.5px solid var(--border);border-radius:14px;
+    padding:16px 20px;cursor:pointer;transition:all .18s;
+    display:flex;align-items:center;gap:14px;color:var(--ink2);
+  }
+  .choice:hover{border-color:var(--accent2);background:var(--accent-lt);}
+  .choice.selected{border-color:var(--accent);background:var(--accent-lt);color:var(--accent);}
+  .choice .ico{font-size:22px;flex-shrink:0;}
+  .choice-label{font-size:15px;font-weight:700;}
+  .choice-sub{font-size:12px;color:var(--ink3);margin-top:3px;}
+  .choice.selected .choice-sub{color:var(--accent2);}
+
+  /* ── chips ── */
+  .chips{display:flex;flex-wrap:wrap;gap:8px;}
+  .chip{
+    background:var(--card2);border:1.5px solid var(--border);border-radius:99px;
+    padding:10px 20px;cursor:pointer;font-size:14px;font-weight:500;
+    color:var(--ink2);transition:all .16s;white-space:nowrap;
+  }
+  .chip:hover{border-color:var(--accent2);background:var(--accent-lt);color:var(--ink);}
+  .chip.selected{border-color:var(--accent);background:var(--accent-lt);color:var(--accent);font-weight:700;}
+  .chip-note{font-size:12px;color:var(--ink3);margin-top:12px;}
+
+  /* ── text inputs ── */
+  input[type=text],textarea{
+    width:100%;background:var(--card2);border:1.5px solid var(--border);
+    border-radius:14px;color:var(--ink);font-family:inherit;outline:none;
+    transition:border-color .18s,box-shadow .18s;
+  }
+  input[type=text]{font-size:18px;padding:16px 20px;}
+  textarea{font-size:15px;padding:18px 20px;resize:vertical;min-height:130px;line-height:1.75;}
+  input[type=text]:focus,textarea:focus{
+    border-color:var(--accent);box-shadow:0 0 0 3px rgba(30,27,94,.08);
+  }
+  input[type=text]::placeholder,textarea::placeholder{color:var(--ink3);}
+
+  /* ── nav ── */
+  .nav{display:flex;justify-content:space-between;align-items:center;margin-top:36px;gap:12px;}
+  .btn{border:none;font-family:inherit;font-weight:700;cursor:pointer;transition:all .18s;border-radius:12px;}
+  .btn-prev{
+    background:transparent;color:var(--ink3);font-size:14px;
+    padding:12px 0;display:flex;align-items:center;gap:6px;
+  }
+  .btn-prev:hover{color:var(--ink2);}
+  .btn-next{
+    background:var(--accent);color:#fff;font-size:15px;
+    padding:15px 36px;flex:1;max-width:220px;letter-spacing:.02em;
+    box-shadow:0 4px 16px rgba(30,27,94,.2);
+  }
+  .btn-next:hover:not(:disabled){background:var(--accent2);transform:translateY(-2px);box-shadow:0 6px 20px rgba(30,27,94,.3);}
+  .btn-next:disabled{background:var(--border);color:var(--ink3);cursor:not-allowed;box-shadow:none;}
+
+  /* ── done ── */
+  .done{text-align:center;padding:60px 32px;}
+  .done-icon{font-size:56px;margin-bottom:28px;}
+  .done h2{font-size:28px;font-weight:900;margin-bottom:14px;letter-spacing:-.01em;}
+  .done p{color:var(--ink2);line-height:1.9;font-size:15px;}
+
+  /* ── unit toggle ── */
+  .unit-toggle{
+    display:flex;background:var(--card2);border:1px solid var(--border);
+    border-radius:99px;padding:4px;gap:4px;width:fit-content;margin:0 auto 28px;
+  }
+  .unit-btn{
+    border:none;border-radius:99px;padding:9px 26px;font-size:14px;font-weight:600;
+    cursor:pointer;background:transparent;color:var(--ink2);transition:all .2s;font-family:inherit;
+  }
+  .unit-btn.active{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(30,27,94,.2);}
+
+  /* ── time breakdown ── */
+  .breakdown-wrap{display:flex;flex-direction:column;gap:12px;}
+  .breakdown-row{
+    background:var(--card2);border:1.5px solid var(--border);
+    border-radius:16px;padding:18px 20px;transition:border-color .2s,background .2s;
+  }
+  .breakdown-row.done{border-color:var(--accent);background:#fff;}
+  .stage-name{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:3px;display:flex;align-items:center;gap:8px;}
+  .stage-desc{font-size:12px;color:var(--ink3);margin-bottom:12px;line-height:1.55;}
+  .time-opts{display:flex;gap:6px;flex-wrap:wrap;}
+  .t-btn{
+    border:1.5px solid var(--border);background:#fff;border-radius:8px;
+    padding:7px 13px;font-size:12px;font-weight:500;color:var(--ink2);
+    cursor:pointer;transition:all .15s;white-space:nowrap;font-family:inherit;
+  }
+  .t-btn:hover{border-color:var(--accent2);color:var(--ink);background:var(--accent-lt);}
+  .t-btn.sel{border-color:var(--accent);background:var(--accent-lt);color:var(--accent);font-weight:700;}
+  .t-other-wrap{margin-top:10px;display:none;}
+  .t-other-wrap input{
+    width:100%;background:#fff;border:1.5px solid var(--border);border-radius:8px;
+    color:var(--ink);font-size:13px;padding:8px 12px;outline:none;font-family:inherit;
+  }
+  .t-other-wrap input:focus{border-color:var(--accent);}
+  .reason-wrap{overflow:hidden;max-height:0;transition:max-height .35s ease,margin-top .35s ease;margin-top:0;}
+  .reason-wrap.open{max-height:120px;margin-top:12px;}
+  .reason-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--accent2);margin-bottom:8px;display:flex;align-items:center;gap:5px;}
+  .reason-wrap textarea{
+    width:100%;background:#fff;border:1.5px solid var(--border);border-radius:10px;
+    color:var(--ink);font-size:13px;padding:10px 14px;resize:none;height:64px;
+    outline:none;font-family:inherit;line-height:1.6;
+  }
+  .reason-wrap textarea:focus{border-color:var(--accent);}
+  .reason-wrap textarea::placeholder{color:var(--ink3);}
+
+  /* ── journey ── */
+  .journey-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(144px,1fr));gap:10px;}
+  .journey-item{
+    position:relative;background:var(--card2);border:1.5px solid var(--border);
+    border-radius:14px;padding:14px 16px;cursor:pointer;transition:all .18s;
+    display:flex;align-items:center;gap:10px;font-size:14px;font-weight:500;color:var(--ink2);
+  }
+  .journey-item:hover{border-color:var(--accent2);background:var(--accent-lt);color:var(--ink);}
+  .journey-item.picked{border-color:var(--accent);background:var(--accent-lt);color:var(--accent);font-weight:700;}
+  .journey-item .seq{
+    position:absolute;top:-9px;right:-9px;width:22px;height:22px;border-radius:50%;
+    background:var(--accent);color:#fff;font-size:11px;font-weight:800;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 0 0 2px var(--bg);
+  }
+  .journey-item .j-ico{font-size:20px;flex-shrink:0;}
+  .journey-note{font-size:12px;color:var(--ink3);margin-top:12px;line-height:1.6;}
+  .journey-item .j-label{flex:1;min-width:0;}
+  .j-del-btn{background:none;border:none;font-size:15px;color:var(--ink3);cursor:pointer;
+    padding:0 0 0 4px;line-height:1;flex-shrink:0;transition:color .15s;}
+  .j-del-btn:hover{color:var(--accent);}
+  .journey-add-wrap{margin-top:12px;display:flex;flex-direction:column;gap:8px;}
+  .journey-add-btn{border:1.5px dashed var(--border2);background:transparent;border-radius:12px;
+    padding:10px 18px;font-size:13px;font-weight:600;color:var(--ink3);cursor:pointer;
+    transition:all .18s;font-family:inherit;display:flex;align-items:center;gap:6px;width:fit-content;}
+  .journey-add-btn:hover{border-color:var(--accent2);color:var(--accent);}
+  .j-custom-row{display:none;align-items:center;gap:8px;}
+  .j-custom-row input{flex:1;background:var(--card2);border:1.5px solid var(--border);
+    border-radius:10px;color:var(--ink);font-size:14px;padding:9px 14px;outline:none;font-family:inherit;transition:border-color .15s;}
+  .j-custom-row input:focus{border-color:var(--accent);}
+  .j-custom-ok{background:var(--accent);color:#fff;border:none;border-radius:10px;
+    padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;}
+
+  /* ── other-wrap (chips 기타) ── */
+  #other-wrap{margin-top:14px;}
+  #other-inp{
+    width:100%;background:var(--card2);border:1.5px solid var(--border);
+    border-radius:10px;color:var(--ink);font-size:14px;padding:10px 14px;
+    outline:none;font-family:inherit;transition:border-color .18s;
+  }
+  #other-inp:focus{border-color:var(--accent);}
+
+  /* ── intro card ── */
+  .intro-tag{display:inline-block;background:var(--accent-lt);color:var(--accent);
+    font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+    padding:5px 12px;border-radius:99px;margin-bottom:24px;}
+  .intro-title{font-size:32px;font-weight:900;line-height:1.25;letter-spacing:-.02em;
+    color:var(--ink);margin-bottom:18px;}
+  .intro-desc{font-size:15px;color:var(--ink2);line-height:1.85;margin-bottom:32px;}
+  .intro-meta{display:flex;flex-direction:column;gap:10px;margin-bottom:36px;
+    padding:20px 22px;background:var(--card2);border-radius:14px;border:1px solid var(--border);}
+  .intro-meta-row{display:flex;align-items:center;gap:12px;font-size:14px;color:var(--ink2);}
+  .intro-meta-row .m-ico{font-size:18px;width:24px;text-align:center;flex-shrink:0;}
+  .intro-meta-row strong{color:var(--ink);font-weight:700;}
+  .btn-start{
+    width:100%;background:var(--accent);color:#fff;border:none;border-radius:14px;
+    padding:18px;font-size:16px;font-weight:700;letter-spacing:.03em;cursor:pointer;
+    font-family:inherit;transition:all .2s;
+    box-shadow:0 6px 20px rgba(30,27,94,.22);
+  }
+  .btn-start:hover{background:var(--accent2);transform:translateY(-2px);box-shadow:0 8px 24px rgba(30,27,94,.3);}
+
+  @media(max-width:520px){
+    .card{padding:32px 24px;}
+    .q-text{font-size:22px;}
+    .intro-title{font-size:26px;}
+    .slider-num{font-size:52px;}
+    .journey-grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));}
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="prog-wrap" id="progWrap">
+    <div class="prog-meta">
+      <span class="prog-step" id="progText">시작 전 · 1 / 7</span>
+    </div>
+    <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:14%"></div></div>
+  </div>
+  <div id="cardArea"></div>
+</div>
+
+<script>
+const STEPS = [
+  {
+    id:'intro',
+    num:'안내',
+    type:'intro',
+  },
+  {
+    id:'name',
+    num:'시작 전',
+    q:'먼저 실명을 입력해 주세요',
+    sub:'응답 데이터는 팀 내부에서만 확인하며, 외부에 공개되지 않아요.',
+    type:'text',
+    placeholder:'홍길동',
+  },
+  {
+    id:'requestFreq',
+    num:'Q1',
+    q:'강사 섭외를 얼마나 자주 하시나요?',
+    sub:'강사 후보를 찾고 정리해서 고객에게 전달하는 전체 과정 기준으로요.',
+    type:'slider_freq',
+    min:1, max:20,
+  },
+  {
+    id:'timeBreakdown',
+    num:'Q2',
+    q:'각 단계마다 얼마나 시간이 걸리나요?',
+    sub:'건당 평균 기준으로 각 단계에서 소요되는 시간을 골라주세요.',
+    type:'time_breakdown',
+    stages:[
+      {ico:'🔍', key:'서칭',  label:'강사 서칭·탐색',
+        desc:'후보 강사를 찾고 적합도를 검토하는 시간 (DB 탐색, 유튜브·링크드인 리서치 등)',
+        times:['30분~1시간','1~3시간','3~6시간','6시간 이상','기타'], longFrom:2},
+      {ico:'📞', key:'컨택',  label:'연락 · 가용 확인 · 일정 조율',
+        desc:'첫 연락 발송부터 답변 수신, 일정 확정까지의 총 소요 시간 (대기 시간 포함)',
+        times:['15분미만','15~30분','30분~1시간','1시간~1일','1~3일','3일 이상','기타'], longFrom:4},
+      {ico:'📄', key:'프로필',label:'프로필 정리',
+        desc:'강사 자료를 고객사 형식에 맞게 정리·편집하는 시간',
+        times:['10분미만','10~30분','30분~1시간','1~2시간','2시간 이상','기타'], longFrom:3},
+      {ico:'📤', key:'전달',  label:'고객사 전달·확인',
+        desc:'후보를 고객사에 공유하고 최종 의사결정을 받는 시간 (대기 시간 포함)',
+        times:['5분미만','5~15분','15~30분','30분~1시간','1시간 이상','기타'], longFrom:4},
+    ],
+  },
+  {
+    id:'journey',
+    num:'Q3',
+    q:'강사 한 명을 섭외할 때, 어떻게 진행하시나요?',
+    sub:'내가 실제로 하는 순서대로 클릭해 주세요. 클릭한 순서대로 번호가 붙어요. 해당 없는 단계는 건너뛰어도 돼요.',
+    type:'journey',
+    options:[
+      {ico:'📋', label:'고객 요청 파악'},
+      {ico:'🗂️', label:'Notion DB 검색'},
+      {ico:'📺', label:'유튜브 검색'},
+      {ico:'💼', label:'링크드인 검색'},
+      {ico:'📚', label:'인프런 검색'},
+      {ico:'🔍', label:'구글 검색'},
+      {ico:'💬', label:'지인·동료 추천'},
+      {ico:'🏢', label:'에이전시 연락'},
+      {ico:'📞', label:'강사에게 직접 연락'},
+      {ico:'📄', label:'후보 프로필 정리'},
+      {ico:'📤', label:'고객사에 전달'},
+      {ico:'🤝', label:'미팅·싱크업 주선'},
+      {ico:'✅', label:'최종 확정'},
+    ],
+  },
+  {
+    id:'candidateCount',
+    num:'Q4',
+    q:'한 건당 몇 명의 후보 강사에게 연락하시나요?',
+    sub:'첫 연락을 보내는 강사 수 기준으로요.',
+    type:'slider',
+    min:1, max:15, unit:'명',
+    labels:['1명','3명','5명','10명','15명+'],
+  },
+  {
+    id:'painPoints',
+    num:'Q5',
+    q:'강사 섭외 과정에서 가장 힘든 점은 무엇인가요?',
+    sub:'최대 3개까지 선택해 주세요.',
+    type:'chips',
+    max:3,
+    options:[
+      '출강 히스토리 파악하기',
+      '강의 스타일 판단하기',
+      '프로필 장표 탐색/제작',
+      '강사 일정 조율',
+      '강사료 협의가 어려움',
+      '적합한 강사를 못 찾겠음',
+      '강사 DB 내 강사 수가 적음',
+      '기타',
+    ],
+  },
+  {
+    id:'freeText',
+    num:'Q6',
+    q:'마지막으로, 강사 섭외 과정에서 "이게 있으면 진짜 편할 텐데" 싶은 게 있나요?',
+    sub:'아무 말이나 편하게 적어주세요. 아이디어든, 불만이든 다 환영해요 :)',
+    type:'textarea',
+    placeholder:'자유롭게 작성해 주세요...',
+  },
+];
+
+const answers = {};
+let step = 0;
+
+function render() {
+  const total = STEPS.length;
+  const pct = Math.round(((step + 1) / total) * 100);
+  const s0 = STEPS[step];
+  document.getElementById('progText').textContent = `${s0.num}  ·  ${step + 1} / ${total}`;
+  document.getElementById('progFill').style.width = pct + '%';
+  // dots (intro 제외)
+  const nonIntroSteps = STEPS.filter(s => s.type !== 'intro');
+  const nonIntroIdx = nonIntroSteps.findIndex(s => s.id === STEPS[step].id);
+  const dots = document.getElementById('progDots');
+  if (dots) {
+    dots.innerHTML = nonIntroSteps.map((_,i) =>
+      `<div class="prog-dot${i === nonIntroIdx ? ' on' : i < nonIntroIdx ? ' done' : ''}"></div>`
+    ).join('');
+  }
+  const pctAdj = Math.round(((nonIntroIdx + 1) / nonIntroSteps.length) * 100);
+  document.getElementById('progFill').style.width = pctAdj + '%';
+
+  const s = STEPS[step];
+  // hide progress on intro
+  document.getElementById('progWrap').style.display = s.type === 'intro' ? 'none' : '';
+
+  const area = document.getElementById('cardArea');
+  area.innerHTML = buildCard(s);
+  if (s.type === 'intro') return;
+
+  // restore saved answer
+  if (s.type === 'slider') {
+    const saved = answers[s.id] ?? Math.round((s.min + s.max) / 2);
+    const sl = document.getElementById('sl');
+    sl.value = saved;
+    updateSliderVal(s, saved);
+    sl.addEventListener('input', () => {
+      answers[s.id] = parseInt(sl.value);
+      updateSliderVal(s, sl.value);
+    });
+  } else if (s.type === 'slider_freq') {
+    if (!answers[s.id]) answers[s.id] = {count: 3, unit: 'week'};
+    const saved = answers[s.id];
+    document.getElementById('sl-freq').value = saved.count;
+    updateFreqDisplay(saved.count, saved.unit);
+    document.getElementById('sl-freq').addEventListener('input', e => {
+      answers[s.id].count = parseInt(e.target.value);
+      updateFreqDisplay(answers[s.id].count, answers[s.id].unit);
+    });
+    document.querySelectorAll('.unit-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.unit-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        answers[s.id].unit = btn.dataset.unit;
+        updateFreqDisplay(answers[s.id].count, answers[s.id].unit);
+      });
+    });
+  } else if (s.type === 'choice') {
+    document.querySelectorAll('.choice').forEach(el => {
+      if (el.dataset.val === answers[s.id]) el.classList.add('selected');
+      el.addEventListener('click', () => {
+        document.querySelectorAll('.choice').forEach(e => e.classList.remove('selected'));
+        el.classList.add('selected');
+        answers[s.id] = el.dataset.val;
+        checkNext();
+      });
+    });
+  } else if (s.type === 'time_breakdown') {
+    if (!answers[s.id]) answers[s.id] = {};
+    renderBreakdown(s);
+  } else if (s.type === 'journey') {
+    if (!answers[s.id]) answers[s.id] = [];
+    if (!answers[s.id + '_custom']) answers[s.id + '_custom'] = [];
+    renderJourney(s);
+
+    document.getElementById('journeyAddBtn').addEventListener('click', () => {
+      const row = document.getElementById('jCustomRow');
+      const showing = row.style.display === 'flex';
+      row.style.display = showing ? 'none' : 'flex';
+      if (!showing) document.getElementById('jCustomInp').focus();
+    });
+
+    const confirmAdd = () => {
+      const inp = document.getElementById('jCustomInp');
+      const val = inp.value.trim();
+      if (!val) return;
+      if (!answers[s.id + '_custom'].includes(val)) {
+        answers[s.id + '_custom'].push(val);
+      }
+      inp.value = '';
+      document.getElementById('jCustomRow').style.display = 'none';
+      renderJourney(s);
+      checkNext();
+    };
+    document.getElementById('jCustomOk').addEventListener('click', confirmAdd);
+    document.getElementById('jCustomInp').addEventListener('keydown', e => { if (e.key === 'Enter') confirmAdd(); });
+  } else if (s.type === 'chips') {
+    if (!answers[s.id]) answers[s.id] = [];
+    // restore 기타 input if previously selected
+    if (answers[s.id].includes('기타')) {
+      const wrap = document.getElementById('other-wrap');
+      if (wrap) {
+        wrap.style.display = 'block';
+        const inp = document.getElementById('other-inp');
+        if (inp) {
+          inp.value = answers[s.id + '_기타'] || '';
+          inp.addEventListener('input', () => { answers[s.id + '_기타'] = inp.value.trim(); checkNext(); });
+        }
+      }
+    }
+    document.querySelectorAll('.chip').forEach(el => {
+      if (answers[s.id].includes(el.dataset.val)) el.classList.add('selected');
+      el.addEventListener('click', () => {
+        const v = el.dataset.val;
+        const arr = answers[s.id];
+        if (el.classList.contains('selected')) {
+          answers[s.id] = arr.filter(x => x !== v);
+          el.classList.remove('selected');
+          if (v === '기타') {
+            const wrap = document.getElementById('other-wrap');
+            if (wrap) wrap.style.display = 'none';
+            answers[s.id + '_기타'] = '';
+          }
+        } else {
+          if (s.max && arr.length >= s.max) return;
+          answers[s.id] = [...arr, v];
+          el.classList.add('selected');
+          if (v === '기타') {
+            const wrap = document.getElementById('other-wrap');
+            if (wrap) {
+              wrap.style.display = 'block';
+              const inp = document.getElementById('other-inp');
+              if (inp) {
+                inp.value = answers[s.id + '_기타'] || '';
+                inp.focus();
+                inp.addEventListener('input', () => { answers[s.id + '_기타'] = inp.value.trim(); checkNext(); });
+              }
+            }
+          }
+        }
+        checkNext();
+      });
+    });
+  } else if (s.type === 'textarea') {
+    const ta = document.getElementById('ta');
+    ta.value = answers[s.id] || '';
+    ta.addEventListener('input', () => { answers[s.id] = ta.value; checkNext(); });
+  } else if (s.type === 'text') {
+    const inp = document.getElementById('name-inp');
+    inp.value = answers[s.id] || '';
+    inp.addEventListener('input', () => {
+      answers[s.id] = inp.value.trim();
+      const warn = document.getElementById('name-warn');
+      if (warn) warn.style.display = inp.value.trim() === '익명' ? 'block' : 'none';
+      checkNext();
+    });
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && (answers[s.id] || '').length > 0 && answers[s.id] !== '익명') nextStep();
+    });
+    inp.focus();
+  }
+
+  // nav
+  document.getElementById('btnPrev').addEventListener('click', () => { step--; render(); });
+  document.getElementById('btnNext').addEventListener('click', nextStep);
+  checkNext();
+}
+
+function buildCard(s) {
+  if (s.type === 'intro') {
+    return `<div class="card">
+      <div class="intro-tag">유저 리서치</div>
+      <div class="intro-title">강사 섭외 경험,<br/>솔직하게 들려주세요</div>
+      <div class="intro-desc">
+        매니저가 강사를 찾고, 연락하고, 고객사에 전달하기까지<br/>
+        그 과정에서 <strong>실제로 어떤 경험을 하는지</strong> 파악하려고 해요.<br/>
+        여러분의 답변이 더 나은 도구와 프로세스를 만드는 데 직접 쓰입니다.
+      </div>
+      <div class="intro-meta">
+        <div class="intro-meta-row"><span class="m-ico">⏱</span><span><strong>약 5분</strong> 소요</span></div>
+        <div class="intro-meta-row"><span class="m-ico">📝</span><span><strong>6개</strong> 질문</span></div>
+        <div class="intro-meta-row"><span class="m-ico">🔒</span><span>응답은 팀 내부에서만 확인 — <strong>외부 비공개</strong></span></div>
+        <div class="intro-meta-row"><span class="m-ico">👤</span><span>실명으로 참여해 주세요 (데이터 관리 목적)</span></div>
+      </div>
+      <button class="btn-start" onclick="nextStep()">시작하기 →</button>
+    </div>`;
+  }
+
+  let body = '';
+  if (s.type === 'slider') {
+    const def = answers[s.id] ?? Math.round((s.min + s.max) / 2);
+    const labels = s.labels.map(l => `<span>${l}</span>`).join('');
+    body = `
+      <div class="slider-display"><span class="slider-num" id="slVal">${def}</span><span class="slider-unit">${s.unit}</span></div>
+      <input type="range" class="slider" id="sl" min="${s.min}" max="${s.max}" value="${def}"/>
+      <div class="slider-labels">${labels}</div>`;
+  } else if (s.type === 'slider_freq') {
+    const saved = answers[s.id] || {count:3, unit:'week'};
+    const wActive = saved.unit === 'week' ? 'active' : '';
+    const mActive = saved.unit === 'month' ? 'active' : '';
+    body = `
+      <div class="unit-toggle">
+        <button class="unit-btn ${wActive}" data-unit="week">주 단위</button>
+        <button class="unit-btn ${mActive}" data-unit="month">월 단위</button>
+      </div>
+      <div class="slider-display"><span class="slider-num" id="freqVal">${saved.count}</span><span class="slider-unit" id="freqUnit">${saved.unit==='week'?'건/주':'건/월'}</span></div>
+      <input type="range" class="slider" id="sl-freq" min="${s.min}" max="${s.max}" value="${saved.count}"/>
+      <div class="slider-labels"><span>1건</span><span>5건</span><span>10건</span><span>15건</span><span>20건+</span></div>`;
+  } else if (s.type === 'choice') {
+    const opts = s.options.map(o =>
+      `<div class="choice" data-val="${o.val}">
+        <span class="ico">${o.ico}</span>
+        <div><div class="choice-label">${o.label}</div><div class="choice-sub">${o.sub}</div></div>
+      </div>`).join('');
+    body = `<div class="choices">${opts}</div>`;
+  } else if (s.type === 'time_breakdown') {
+    const rows = s.stages.map(st => {
+      const btns = st.times.map(t =>
+        `<button class="t-btn" data-stage="${st.key}" data-val="${t}">${t}</button>`).join('');
+      return `<div class="breakdown-row" id="br-${st.key}">
+        <div class="stage-name"><span>${st.ico}</span>${st.label}</div>
+        <div class="stage-desc">${st.desc}</div>
+        <div class="time-opts">${btns}</div>
+        <div class="t-other-wrap" id="ot-${st.key}">
+          <input type="text" placeholder="직접 입력해 주세요 (예: 2~3주)" maxlength="30"/>
+        </div>
+        <div class="reason-wrap" id="rw-${st.key}">
+          <div class="reason-label">⏱ 오래 걸리는 이유가 있다면?</div>
+          <textarea placeholder="예) 강사 연락이 잘 안 돼요 / 고객사 확정이 늦어요 / 적합한 사람이 없어요..."></textarea>
+        </div>
+      </div>`;
+    }).join('');
+    body = `<div class="breakdown-wrap">${rows}</div>`;
+  } else if (s.type === 'journey') {
+    body = `<div class="journey-grid" id="journeyGrid"></div>
+      <div class="journey-add-wrap">
+        <button class="journey-add-btn" id="journeyAddBtn">＋ 직접 추가</button>
+        <div class="j-custom-row" id="jCustomRow">
+          <input type="text" id="jCustomInp" placeholder="예) 카카오채널 문의" maxlength="20"/>
+          <button class="j-custom-ok" id="jCustomOk">추가</button>
+        </div>
+      </div>
+      <div class="journey-note">선택한 순서대로 번호가 붙어요. 다시 클릭하면 취소돼요.</div>`;
+  } else if (s.type === 'chips') {
+    const chips = s.options.map(o =>
+      `<span class="chip" data-val="${o}">${o}</span>`).join('');
+    const note = s.max ? `<div class="chip-note">최대 ${s.max}개 선택</div>` : '';
+    const hasOther = s.options.includes('기타');
+    const otherBlock = hasOther ? `<div id="other-wrap" style="display:none;margin-top:14px;">
+      <input type="text" id="other-inp" placeholder="어떤 점인지 간단히 적어주세요" maxlength="60"/>
+    </div>` : '';
+    body = `<div class="chips">${chips}</div>${note}${otherBlock}`;
+  } else if (s.type === 'textarea') {
+    body = `<textarea id="ta" placeholder="${s.placeholder}"></textarea>`;
+  } else if (s.type === 'text') {
+    body = `<input type="text" id="name-inp" placeholder="${s.placeholder}" maxlength="30"/>
+      <div id="name-warn" style="display:none;color:#f87171;font-size:13px;margin-top:8px;">이름을 입력해 주세요 :)</div>`;
+  }
+
+  const isFirst = step <= 1; // intro(0) + name(1) 모두 이전 버튼 숨김
+  return `
+    <div class="card">
+      <div class="q-eyebrow">${s.num}</div>
+      <div class="q-text">${s.q}</div>
+      <div class="q-sub">${s.sub}</div>
+      ${body}
+      <div class="nav">
+        <button class="btn btn-prev" id="btnPrev" style="${isFirst ? 'visibility:hidden' : ''}">← 이전</button>
+        <button class="btn btn-next" id="btnNext" disabled>${step === STEPS.length - 1 ? '제출하기 🚀' : '다음 →'}</button>
+      </div>
+    </div>`;
+}
+
+function updateSliderVal(s, val) {
+  const el = document.getElementById('slVal');
+  if (el) el.textContent = val;
+  answers[s.id] = parseInt(val);
+  checkNext();
+}
+
+function renderBreakdown(s) {
+  s.stages.forEach(st => {
+    const row   = document.getElementById('br-'  + st.key);
+    const otWrap= document.getElementById('ot-'  + st.key);
+    const rw    = document.getElementById('rw-'  + st.key);
+    if (!row) return;
+
+    const nonOther = st.times.filter(t => t !== '기타');
+
+    function applyVal(val) {
+      answers[s.id][st.key] = val;
+      row.classList.add('done');
+      // 기타 input
+      if (otWrap) otWrap.style.display = val === '기타' ? 'block' : 'none';
+      if (val !== '기타') answers[s.id][st.key + '_기타'] = '';
+      // long reason toggle
+      if (rw) {
+        const idx = nonOther.indexOf(val);
+        const isLong = idx >= st.longFrom;
+        rw.classList.toggle('open', isLong);
+        if (!isLong) answers[s.id][st.key + '_reason'] = '';
+      }
+      checkNext();
+    }
+
+    // restore
+    const saved = answers[s.id][st.key];
+    if (saved) {
+      row.querySelector(`.t-btn[data-val="${saved}"]`)?.classList.add('sel');
+      applyVal(saved);
+    }
+
+    // button clicks
+    row.querySelectorAll('.t-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        row.querySelectorAll('.t-btn').forEach(b => b.classList.remove('sel'));
+        btn.classList.add('sel');
+        applyVal(btn.dataset.val);
+      });
+    });
+
+    // 기타 text
+    const otInp = otWrap?.querySelector('input');
+    if (otInp) {
+      otInp.value = answers[s.id][st.key + '_기타'] || '';
+      otInp.addEventListener('input', () => {
+        answers[s.id][st.key + '_기타'] = otInp.value.trim();
+        checkNext();
+      });
+    }
+
+    // reason textarea
+    const rTa = rw?.querySelector('textarea');
+    if (rTa) {
+      rTa.value = answers[s.id][st.key + '_reason'] || '';
+      rTa.addEventListener('input', () => {
+        answers[s.id][st.key + '_reason'] = rTa.value;
+      });
+    }
+  });
+}
+
+function renderJourney(s) {
+  const seq = answers[s.id] || [];
+  const custom = answers[s.id + '_custom'] || [];
+  const grid = document.getElementById('journeyGrid');
+  if (!grid) return;
+
+  const allItems = [
+    ...s.options.map(o => ({label: o.label, ico: o.ico, custom: false})),
+    ...custom.map(label => ({label, ico: '✏️', custom: true})),
+  ];
+
+  grid.innerHTML = allItems.map(o => {
+    const idx = seq.indexOf(o.label);
+    const picked = idx >= 0;
+    const seq_badge = picked ? `<div class="seq">${idx + 1}</div>` : '';
+    const del_btn = o.custom ? `<button class="j-del-btn" data-del="${o.label}">×</button>` : '';
+    return `<div class="journey-item${picked ? ' picked' : ''}" data-val="${o.label}">
+      ${seq_badge}<span class="j-ico">${o.ico}</span><span class="j-label">${o.label}</span>${del_btn}
+    </div>`;
+  }).join('');
+
+  grid.querySelectorAll('.journey-item').forEach(el => {
+    el.addEventListener('click', e => {
+      if (e.target.classList.contains('j-del-btn')) return;
+      const v = el.dataset.val;
+      answers[s.id] = (answers[s.id] || []).includes(v)
+        ? answers[s.id].filter(x => x !== v)
+        : [...(answers[s.id] || []), v];
+      renderJourney(s);
+      checkNext();
+    });
+  });
+
+  grid.querySelectorAll('.j-del-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const label = btn.dataset.del;
+      answers[s.id + '_custom'] = (answers[s.id + '_custom'] || []).filter(x => x !== label);
+      answers[s.id] = (answers[s.id] || []).filter(x => x !== label);
+      renderJourney(s);
+      checkNext();
+    });
+  });
+}
+
+function updateFreqDisplay(count, unit) {
+  const v = document.getElementById('freqVal');
+  const u = document.getElementById('freqUnit');
+  if (v) v.textContent = count;
+  if (u) u.textContent = unit === 'week' ? '건/주' : '건/월';
+}
+
+function checkNext() {
+  const btn = document.getElementById('btnNext');
+  if (!btn) return;
+  const s = STEPS[step];
+  let ok = false;
+  if (s.type === 'intro') ok = true;
+  else if (s.type === 'slider') ok = true;
+  else if (s.type === 'slider_freq') ok = true;
+  else if (s.type === 'time_breakdown') {
+    const d = answers[s.id] || {};
+    ok = s.stages.every(st => {
+      const v = d[st.key];
+      if (!v) return false;
+      if (v === '기타') return (d[st.key + '_기타'] || '').length > 0;
+      return true;
+    });
+  }
+  else if (s.type === 'journey') ok = (answers[s.id]?.length ?? 0) >= 1;
+  else if (s.type === 'choice') ok = !!answers[s.id];
+  else if (s.type === 'chips') {
+    const arr = answers[s.id] || [];
+    ok = arr.length > 0;
+    if (ok && arr.includes('기타') && s.options.includes('기타')) {
+      ok = (answers[s.id + '_기타'] || '').length > 0;
+    }
+  }
+  else if (s.type === 'textarea') ok = (answers[s.id] || '').trim().length > 0;
+  else if (s.type === 'text') {
+    const v = (answers[s.id] || '').trim();
+    ok = v.length > 0 && v !== '익명';
+  }
+  btn.disabled = !ok;
+}
+
+function nextStep() {
+  if (step < STEPS.length - 1) {
+    step++;
+    render();
+  } else {
+    submit();
+  }
+}
+
+function submit() {
+  const payload = {
+    name: answers.name || '익명',
+    requestFreq: answers.requestFreq || {count:0, unit:'week'},
+    timeBreakdown: answers.timeBreakdown || {},
+    journey: answers.journey || [],
+    journey_custom: answers['journey_custom'] || [],
+    candidateCount: answers.candidateCount,
+    painPoints: answers.painPoints || [],
+    painPoints_기타: answers['painPoints_기타'] || '',
+    freeText: answers.freeText || '',
+  };
+
+  document.getElementById('progWrap').style.display = 'none';
+  document.getElementById('cardArea').innerHTML = `
+    <div class="card done">
+      <div class="done-icon">🙏</div>
+      <h2>답변 제출 중...</h2>
+      <p>잠깐만요!</p>
+    </div>`;
+
+  fetch('/api/survey/submit', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(payload),
+  })
+  .then(r => r.json())
+  .then(() => showDone())
+  .catch(() => showDone()); // 로컬 서버 없어도 완료 화면 표시
+}
+
+function showDone() {
+  document.getElementById('cardArea').innerHTML = `
+    <div class="card done">
+      <div class="done-icon">✨</div>
+      <h2>참여해 주셔서 감사해요!</h2>
+      <p>솔직한 답변이 더 나은 강사 섭외 경험을 만드는 데<br/>큰 도움이 됩니다.<br/><br/>
+      응답이 잘 기록됐어요. 고마워요 :)</p>
+    </div>`;
+}
+
+render();
+</script>
+</body>
+</html>

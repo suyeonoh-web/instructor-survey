@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>설문 관리자 — 강사 섭외 리서치</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#0f1117;--card:#1a1d27;--card2:#22263a;
+    --accent:#6c63ff;--accent2:#a78bfa;
+    --ink:#f0f2ff;--ink2:#9ea3b8;--ink3:#5a607a;
+    --border:#2d324a;--radius:14px;
+    --green:#34d399;--yellow:#fbbf24;--red:#f87171;
+  }
+  body{background:var(--bg);color:var(--ink);font-family:'Pretendard','Noto Sans KR',sans-serif;min-height:100vh;}
+
+  /* login */
+  #loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;}
+  .login-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:48px 40px;width:100%;max-width:400px;text-align:center;}
+  .login-box h1{font-size:22px;font-weight:800;margin-bottom:8px;}
+  .login-box p{color:var(--ink2);font-size:14px;margin-bottom:32px;}
+  .login-box input{width:100%;background:var(--card2);border:1.5px solid var(--border);border-radius:10px;
+    color:var(--ink);font-size:16px;padding:13px 16px;outline:none;font-family:inherit;text-align:center;letter-spacing:.1em;}
+  .login-box input:focus{border-color:var(--accent);}
+  .login-box button{width:100%;margin-top:14px;background:var(--accent);border:none;border-radius:10px;
+    color:#fff;font-size:15px;font-weight:700;padding:14px;cursor:pointer;transition:background .18s;}
+  .login-box button:hover{background:#7c73ff;}
+  .login-err{color:var(--red);font-size:13px;margin-top:10px;min-height:18px;}
+
+  /* main */
+  #mainScreen{display:none;padding:32px 24px;}
+  .top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px;}
+  .top-bar h1{font-size:22px;font-weight:800;}
+  .top-actions{display:flex;gap:8px;}
+  .btn{border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer;transition:all .18s;}
+  .btn-ghost{background:var(--card2);color:var(--ink2);border:1px solid var(--border);}
+  .btn-ghost:hover{background:var(--border);color:var(--ink);}
+  .btn-green{background:var(--green);color:#000;}
+  .btn-green:hover{filter:brightness(1.1);}
+
+  /* stats */
+  .stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-bottom:28px;}
+  .stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px 18px;}
+  .stat-label{font-size:12px;color:var(--ink2);margin-bottom:8px;}
+  .stat-val{font-size:28px;font-weight:800;color:var(--accent2);}
+  .stat-unit{font-size:13px;color:var(--ink3);font-weight:400;margin-left:4px;}
+
+  /* charts section */
+  .charts{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:28px;}
+  .chart-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;}
+  .chart-title{font-size:13px;font-weight:700;color:var(--ink2);margin-bottom:16px;text-transform:uppercase;letter-spacing:.05em;}
+  .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:9px;}
+  .bar-lbl{font-size:13px;color:var(--ink2);min-width:130px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .bar-track{flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden;}
+  .bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .5s ease;}
+  .bar-cnt{font-size:12px;color:var(--ink3);min-width:26px;text-align:right;}
+
+  /* table */
+  .tbl-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border);}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{background:var(--card2);color:var(--ink2);font-weight:700;text-align:left;padding:12px 14px;
+    white-space:nowrap;border-bottom:1px solid var(--border);}
+  td{padding:11px 14px;border-bottom:1px solid #1e2235;vertical-align:top;color:var(--ink);}
+  tr:last-child td{border-bottom:none;}
+  tr:hover td{background:rgba(108,99,255,.06);}
+  .badge{display:inline-block;background:rgba(108,99,255,.18);color:var(--accent2);
+    font-size:11px;font-weight:600;border-radius:99px;padding:2px 8px;margin:2px 2px 2px 0;white-space:nowrap;}
+  .badge.green{background:rgba(52,211,153,.15);color:var(--green);}
+  .cell-free{max-width:200px;word-break:break-all;color:var(--ink2);}
+  .ts{color:var(--ink3);font-size:12px;}
+
+  /* empty */
+  .empty{text-align:center;padding:64px 24px;color:var(--ink3);}
+  .empty .ico{font-size:48px;margin-bottom:16px;}
+  .empty p{font-size:15px;}
+
+  @media(max-width:600px){
+    .stat-val{font-size:22px;}
+    .charts{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<!-- 로그인 -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div style="font-size:36px;margin-bottom:16px;">🔐</div>
+    <h1>관리자 페이지</h1>
+    <p>강사 섭외 유저 리서치 설문 결과를 확인합니다.</p>
+    <input type="password" id="pwInput" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter')tryLogin()"/>
+    <button onclick="tryLogin()">입장하기</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- 메인 -->
+<div id="mainScreen">
+  <div class="top-bar">
+    <h1>📊 설문 응답 관리</h1>
+    <div class="top-actions">
+      <button class="btn btn-ghost" onclick="loadData()">↻ 새로고침</button>
+      <button class="btn btn-green" onclick="exportCSV()">CSV 다운로드</button>
+    </div>
+  </div>
+
+  <div class="stats" id="statsArea"></div>
+  <div class="charts" id="chartsArea"></div>
+
+  <div class="tbl-wrap">
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>이름</th>
+          <th>주당 건수</th>
+          <th>단계별 소요 시간</th>
+          <th>섭외 여정</th>
+          <th>후보 수</th>
+          <th>페인포인트</th>
+          <th>자유 의견</th>
+          <th>제출 시각</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div class="empty" id="emptyMsg" style="display:none">
+      <div class="ico">📭</div>
+      <p>아직 응답이 없어요.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+let savedPw = '';
+let allData = [];
+
+function tryLogin() {
+  const pw = document.getElementById('pwInput').value;
+  document.getElementById('loginErr').textContent = '';
+  fetch(`/api/survey/responses?pw=${encodeURIComponent(pw)}`)
+    .then(r => {
+      if (r.status === 401) throw new Error('wrong');
+      return r.json();
+    })
+    .then(data => {
+      savedPw = pw;
+      allData = data;
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('mainScreen').style.display = 'block';
+      renderAll(data);
+    })
+    .catch(e => {
+      document.getElementById('loginErr').textContent =
+        e.message === 'wrong' ? '비밀번호가 올바르지 않아요.' : '서버에 연결할 수 없어요. 서버가 실행 중인지 확인하세요.';
+    });
+}
+
+function loadData() {
+  fetch(`/api/survey/responses?pw=${encodeURIComponent(savedPw)}`)
+    .then(r => r.json())
+    .then(data => { allData = data; renderAll(data); });
+}
+
+function renderAll(data) {
+  renderStats(data);
+  renderCharts(data);
+  renderTable(data);
+}
+
+function renderStats(data) {
+  const n = data.length;
+  const avgWeekly = n ? (data.reduce((s,r)=>s+(r.weeklyCount||0),0)/n).toFixed(1) : 0;
+  const avgCand = n ? (data.reduce((s,r)=>s+(r.candidateCount||0),0)/n).toFixed(1) : 0;
+  const html = [
+    {label:'총 응답', val: n, unit:'명'},
+    {label:'평균 주당 섭외 건수', val: avgWeekly, unit:'건'},
+    {label:'평균 후보 강사 수', val: avgCand, unit:'명'},
+  ].map(s => `
+    <div class="stat-card">
+      <div class="stat-label">${s.label}</div>
+      <div class="stat-val">${s.val}<span class="stat-unit">${s.unit}</span></div>
+    </div>`).join('');
+  document.getElementById('statsArea').innerHTML = html;
+}
+
+function renderCharts(data) {
+  if (!data.length) { document.getElementById('chartsArea').innerHTML = ''; return; }
+
+  const timeMap = {};
+  data.forEach(r => { if(r.timePerRequest) timeMap[r.timePerRequest] = (timeMap[r.timePerRequest]||0)+1; });
+  const timeOrder = ['30분미만','30분~1시간','1~3시간','반나절','하루이상'];
+
+  const matMap = {};
+  data.forEach(r => (r.refMaterials||[]).forEach(m => { matMap[m]=(matMap[m]||0)+1; }));
+
+  const painMap = {};
+  data.forEach(r => (r.painPoints||[]).forEach(p => { painMap[p]=(painMap[p]||0)+1; }));
+
+  function barChart(title, map, order) {
+    const sorted = order
+      ? order.filter(k=>map[k]).map(k=>({k,v:map[k]}))
+      : Object.entries(map).sort((a,b)=>b[1]-a[1]).map(([k,v])=>({k,v}));
+    const max = Math.max(...sorted.map(x=>x.v),1);
+    const rows = sorted.map(({k,v})=>`
+      <div class="bar-row">
+        <div class="bar-lbl" title="${k}">${k}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${(v/max*100).toFixed(0)}%"></div></div>
+        <div class="bar-cnt">${v}</div>
+      </div>`).join('');
+    return `<div class="chart-card"><div class="chart-title">${title}</div>${rows||'<div style="color:var(--ink3);font-size:13px">데이터 없음</div>'}</div>`;
+  }
+
+  document.getElementById('chartsArea').innerHTML =
+    barChart('건당 소요 시간', timeMap, timeOrder) +
+    barChart('참조 자료', matMap, null) +
+    barChart('페인포인트 Top', painMap, null);
+}
+
+function renderTable(data) {
+  const tbody = document.getElementById('tbody');
+  const empty = document.getElementById('emptyMsg');
+  if (!data.length) { tbody.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+  tbody.innerHTML = [...data].reverse().map((r,i) => {
+    const mats = (r.journey||[]).map((m,i)=>`<span class="badge">${i+1}.${m}</span>`).join('');
+    const pains = (r.painPoints||[]).map(p=>`<span class="badge green">${p}</span>`).join('');
+    return `<tr>
+      <td>${data.length - i}</td>
+      <td>${esc(r.name||'익명')}</td>
+      <td>${r.weeklyCount ?? '-'}건</td>
+      <td>${Object.entries(r.timeBreakdown||{}).map(([k,v])=>`<span class="badge">${k}:${v}</span>`).join('')||'-'}</td>
+      <td>${mats||'-'}</td>
+      <td>${r.candidateCount ?? '-'}명</td>
+      <td>${pains||'-'}</td>
+      <td class="cell-free">${esc(r.freeText||'-')}</td>
+      <td class="ts">${esc(r.submittedAt||'')}</td>
+    </tr>`;
+  }).join('');
+}
+
+function esc(s){ const d=document.createElement('div');d.textContent=String(s);return d.innerHTML; }
+
+function exportCSV() {
+  if (!allData.length) { alert('내보낼 데이터가 없어요.'); return; }
+  const headers = ['#','이름','주당건수','건당시간','참조자료','후보수','페인포인트','자유의견','제출시각'];
+  const rows = allData.map((r,i) => [
+    i+1, r.name||'익명', r.weeklyCount||'', r.timePerRequest||'',
+    (r.refMaterials||[]).join('|'), r.candidateCount||'',
+    (r.painPoints||[]).join('|'), (r.freeText||'').replace(/\n/g,' '),
+    r.submittedAt||'',
+  ]);
+  const csv = [headers, ...rows].map(row =>
+    row.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')
+  ).join('\n');
+  const blob = new Blob(['﻿'+csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='survey_responses.csv';
+  a.click(); URL.revokeObjectURL(url);
+}
+
+document.getElementById('pwInput').focus();
+</script>
+</body>
+</html>
