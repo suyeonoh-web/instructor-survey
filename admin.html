@@ -115,6 +115,7 @@
         <tr>
           <th>#</th>
           <th>이름</th>
+          <th>회사</th>
           <th>주당 건수</th>
           <th>단계별 소요 시간</th>
           <th>섭외 여정</th>
@@ -237,7 +238,8 @@ function renderTable(data) {
     const pains = (r.painPoints||[]).map(p=>`<span class="badge green">${p}</span>`).join('');
     return `<tr>
       <td>${data.length - i}</td>
-      <td>${esc(r.name||'익명')}</td>
+      <td>${esc(r.name||'')}</td>
+      <td>${esc(r.company||'-')}</td>
       <td>${r.weeklyCount ?? '-'}건</td>
       <td>${Object.entries(r.timeBreakdown||{}).map(([k,v])=>`<span class="badge">${k}:${v}</span>`).join('')||'-'}</td>
       <td>${mats||'-'}</td>
@@ -253,9 +255,9 @@ function esc(s){ const d=document.createElement('div');d.textContent=String(s);r
 
 function exportCSV() {
   if (!allData.length) { alert('내보낼 데이터가 없어요.'); return; }
-  const headers = ['#','이름','주당건수','건당시간','참조자료','후보수','페인포인트','자유의견','제출시각'];
+  const headers = ['#','이름','회사','주당건수','건당시간','참조자료','후보수','페인포인트','자유의견','제출시각'];
   const rows = allData.map((r,i) => [
-    i+1, r.name||'익명', r.weeklyCount||'', r.timePerRequest||'',
+    i+1, r.name||'', r.company||'', r.weeklyCount||'', r.timePerRequest||'',
     (r.refMaterials||[]).join('|'), r.candidateCount||'',
     (r.painPoints||[]).join('|'), (r.freeText||'').replace(/\n/g,' '),
     r.submittedAt||'',

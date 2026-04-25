@@ -205,6 +205,19 @@
   .j-custom-ok{background:var(--accent);color:#fff;border:none;border-radius:10px;
     padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;}
 
+  /* ── file upload ── */
+  .upload-zone{
+    border:2px dashed var(--border2);border-radius:16px;padding:32px 24px;
+    text-align:center;cursor:pointer;transition:all .2s;background:var(--card2);
+  }
+  .upload-zone:hover,.upload-zone.drag-over{border-color:var(--accent);background:var(--accent-lt);}
+  .file-item{display:flex;align-items:center;gap:10px;padding:10px 14px;
+    background:var(--card2);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;}
+  .file-item-name{flex:1;font-size:13px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .file-item-remove{background:none;border:none;color:var(--ink3);cursor:pointer;
+    font-size:20px;line-height:1;padding:0 4px;transition:color .15s;font-family:inherit;}
+  .file-item-remove:hover{color:#f87171;}
+
   /* ── other-wrap (chips 기타) ── */
   #other-wrap{margin-top:14px;}
   #other-inp{
@@ -268,6 +281,21 @@ const STEPS = [
     sub:'응답 데이터는 팀 내부에서만 확인하며, 외부에 공개되지 않아요.',
     type:'text',
     placeholder:'홍길동',
+  },
+  {
+    id:'files',
+    num:'시작 전',
+    q:'참고할 파일이 있으면 첨부해 주세요',
+    sub:'강사 프로필, 제안서 등 실무에서 쓰는 파일이요. 파일명에서 기업명을 자동으로 인식해요. 건너뛰어도 됩니다.',
+    type:'file',
+  },
+  {
+    id:'company',
+    num:'시작 전',
+    q:'소속 회사명을 입력해 주세요',
+    sub:'어느 회사에서 강사 섭외 업무를 하시는지 알려주세요.',
+    type:'text',
+    placeholder:'예: 데이원컴퍼니',
   },
   {
     id:'requestFreq',
@@ -503,8 +531,18 @@ function render() {
     const ta = document.getElementById('ta');
     ta.value = answers[s.id] || '';
     ta.addEventListener('input', () => { answers[s.id] = ta.value; checkNext(); });
+  } else if (s.type === 'file') {
+    if (!answers[s.id]) answers[s.id] = [];
+    renderFileList(s);
+    const zone = document.getElementById('uploadZone');
+    const inp  = document.getElementById('file-inp');
+    zone.addEventListener('click', () => inp.click());
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+    zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('drag-over'); handleFiles(s, Array.from(e.dataTransfer.files)); });
+    inp.addEventListener('change', e => handleFiles(s, Array.from(e.target.files)));
   } else if (s.type === 'text') {
-    const inp = document.getElementById('name-inp');
+    const inp = document.getElementById('text-inp');
     inp.value = answers[s.id] || '';
     inp.addEventListener('input', () => {
       answers[s.id] = inp.value.trim();
@@ -513,7 +551,8 @@ function render() {
       checkNext();
     });
     inp.addEventListener('keydown', e => {
-      if (e.key === 'Enter' && (answers[s.id] || '').length > 0 && answers[s.id] !== '익명') nextStep();
+      const v = answers[s.id] || '';
+      if (e.key === 'Enter' && v.length > 0 && (s.id !== 'name' || v !== '익명')) nextStep();
     });
     inp.focus();
   }
@@ -610,9 +649,21 @@ function buildCard(s) {
     body = `<div class="chips">${chips}</div>${note}${otherBlock}`;
   } else if (s.type === 'textarea') {
     body = `<textarea id="ta" placeholder="${s.placeholder}"></textarea>`;
+  } else if (s.type === 'file') {
+    body = `
+      <div class="upload-zone" id="uploadZone">
+        <div style="font-size:36px;margin-bottom:12px">📎</div>
+        <div style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:6px">클릭하거나 파일을 끌어다 놓으세요</div>
+        <div style="font-size:13px;color:var(--ink3);margin-bottom:16px">PDF · PPTX · DOCX · 여러 파일 동시 가능</div>
+        <div style="display:inline-flex;align-items:center;gap:6px;padding:9px 22px;border-radius:10px;background:var(--accent);color:#fff;font-size:13px;font-weight:600;">파일 선택</div>
+        <input type="file" id="file-inp" multiple accept=".pdf,.pptx,.docx,.xlsx,.hwp,.ppt" style="display:none"/>
+      </div>
+      <div id="file-list" style="margin-top:12px"></div>
+      <div style="margin-top:8px;font-size:12px;color:var(--ink3)">파일명 첫 단어에서 기업명을 자동으로 인식해요.</div>`;
   } else if (s.type === 'text') {
-    body = `<input type="text" id="name-inp" placeholder="${s.placeholder}" maxlength="30"/>
-      <div id="name-warn" style="display:none;color:#f87171;font-size:13px;margin-top:8px;">이름을 입력해 주세요 :)</div>`;
+    const isName = s.id === 'name';
+    body = `<input type="text" id="text-inp" placeholder="${s.placeholder}" maxlength="40"/>
+      ${isName ? '<div id="name-warn" style="display:none;color:#f87171;font-size:13px;margin-top:8px;">이름을 입력해 주세요 :)</div>' : ''}`;
   }
 
   const isFirst = step <= 1; // intro(0) + name(1) 모두 이전 버튼 숨김
@@ -743,6 +794,39 @@ function renderJourney(s) {
   });
 }
 
+function renderFileList(s) {
+  const list = document.getElementById('file-list');
+  if (!list) return;
+  const files = answers[s.id] || [];
+  if (!files.length) { list.innerHTML = ''; return; }
+  list.innerHTML = files.map((name, i) => `
+    <div class="file-item">
+      <span style="font-size:18px">📄</span>
+      <span class="file-item-name">${esc(name)}</span>
+      <button class="file-item-remove" data-idx="${i}">×</button>
+    </div>`).join('');
+  list.querySelectorAll('.file-item-remove').forEach(btn => {
+    btn.addEventListener('click', () => {
+      answers[s.id].splice(parseInt(btn.dataset.idx), 1);
+      renderFileList(s);
+    });
+  });
+}
+
+function handleFiles(s, newFiles) {
+  const validExts = ['pdf','pptx','docx','xlsx','hwp','ppt'];
+  const valid = newFiles.filter(f => validExts.includes(f.name.split('.').pop().toLowerCase()));
+  if (!valid.length) return;
+  answers[s.id] = [...(answers[s.id] || []), ...valid.map(f => f.name)];
+  // 기업명 자동 추출: company가 비어 있으면 첫 파일명 첫 단어 사용
+  if (!(answers.company || '').trim()) {
+    const hint = valid[0].name.replace(/\.[^.]+$/, '').split(/[_\-\s]/)[0];
+    if (hint && hint.length >= 2) answers.company = hint;
+  }
+  renderFileList(s);
+  checkNext();
+}
+
 function updateFreqDisplay(count, unit) {
   const v = document.getElementById('freqVal');
   const u = document.getElementById('freqUnit');
@@ -758,6 +842,7 @@ function checkNext() {
   if (s.type === 'intro') ok = true;
   else if (s.type === 'slider') ok = true;
   else if (s.type === 'slider_freq') ok = true;
+  else if (s.type === 'file') ok = true;
   else if (s.type === 'time_breakdown') {
     const d = answers[s.id] || {};
     ok = s.stages.every(st => {
@@ -795,7 +880,9 @@ function nextStep() {
 
 function submit() {
   const payload = {
-    name: answers.name || '익명',
+    name: answers.name || '',
+    company: answers.company || '',
+    attachments: answers.files || [],
     requestFreq: answers.requestFreq || {count:0, unit:'week'},
     timeBreakdown: answers.timeBreakdown || {},
     journey: answers.journey || [],
