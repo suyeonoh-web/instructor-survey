@@ -4,7 +4,9 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>강사 섭외 경험 설문</title>
-<script src="config.js"></script>
+<script>
+window.SURVEY_ENDPOINT = 'https://script.google.com/macros/s/AKfycby0jfJn23YOTqI_c9lzCsix-1TN_1ivC8qpguf9hHP3BmmdWttw7dtMk2c0a4NCHbA/exec';
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet"/>
 <style>
@@ -275,7 +277,7 @@ const STEPS = [
     q:'강사 섭외를 얼마나 자주 하시나요?',
     sub:'강사 후보를 찾고 정리해서 고객에게 전달하는 전체 과정 기준으로요.',
     type:'slider_freq',
-    min:1, max:20,
+    min:1, max:10,
   },
   {
     id:'timeBreakdown',
@@ -326,8 +328,8 @@ const STEPS = [
     q:'한 건당 몇 명의 후보 강사에게 연락하시나요?',
     sub:'첫 연락을 보내는 강사 수 기준으로요.',
     type:'slider',
-    min:1, max:15, unit:'명',
-    labels:['1명','3명','5명','10명','15명+'],
+    min:1, max:10, unit:'명',
+    labels:['1명','3명','5명','7명','10명+'],
   },
   {
     id:'painPoints',
@@ -350,10 +352,10 @@ const STEPS = [
   {
     id:'freeText',
     num:'Q6',
-    q:'추가로 제안하고 싶은 점이 있다면?',
-    sub:'개선이 필요한 부분, 아이디어, 불편한 점 등 자유롭게 작성해 주세요.',
+    q:'섭외하면서 가장 불편했던 순간이 있나요?',
+    sub:'반복되는 어려움, 답답했던 상황, 아쉬웠던 점 등 무엇이든 솔직하게 적어주세요.',
     type:'textarea',
-    placeholder:'자유롭게 작성해 주세요.',
+    placeholder:'예) 강사 연락이 며칠씩 안 와서 답답했어요 / 프로필을 매번 새로 만드는 게 너무 오래 걸려요...',
   },
 ];
 
@@ -563,7 +565,7 @@ function buildCard(s) {
       </div>
       <div class="slider-display"><span class="slider-num" id="freqVal">${saved.count}</span><span class="slider-unit" id="freqUnit">${saved.unit==='week'?'건/주':'건/월'}</span></div>
       <input type="range" class="slider" id="sl-freq" min="${s.min}" max="${s.max}" value="${saved.count}"/>
-      <div class="slider-labels"><span>1건</span><span>5건</span><span>10건</span><span>15건</span><span>20건+</span></div>`;
+      <div class="slider-labels"><span>1건</span><span>3건</span><span>5건</span><span>7건</span><span>10건+</span></div>`;
   } else if (s.type === 'choice') {
     const opts = s.options.map(o =>
       `<div class="choice" data-val="${o.val}">
@@ -615,7 +617,7 @@ function buildCard(s) {
       <div id="name-warn" style="display:none;color:#f87171;font-size:13px;margin-top:8px;">이름을 입력해 주세요 :)</div>`;
   }
 
-  const isFirst = step <= 1; // intro(0) + name(1) 모두 이전 버튼 숨김
+  const isFirst = step <= 1;
   return `
     <div class="card">
       <div class="q-eyebrow">${s.num}</div>
@@ -648,10 +650,8 @@ function renderBreakdown(s) {
     function applyVal(val) {
       answers[s.id][st.key] = val;
       row.classList.add('done');
-      // 기타 input
       if (otWrap) otWrap.style.display = val === '기타' ? 'block' : 'none';
       if (val !== '기타') answers[s.id][st.key + '_기타'] = '';
-      // long reason toggle
       if (rw) {
         const idx = nonOther.indexOf(val);
         const isLong = idx >= st.longFrom;
@@ -661,14 +661,12 @@ function renderBreakdown(s) {
       checkNext();
     }
 
-    // restore
     const saved = answers[s.id][st.key];
     if (saved) {
       row.querySelector(`.t-btn[data-val="${saved}"]`)?.classList.add('sel');
       applyVal(saved);
     }
 
-    // button clicks
     row.querySelectorAll('.t-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         row.querySelectorAll('.t-btn').forEach(b => b.classList.remove('sel'));
@@ -677,7 +675,6 @@ function renderBreakdown(s) {
       });
     });
 
-    // 기타 text
     const otInp = otWrap?.querySelector('input');
     if (otInp) {
       otInp.value = answers[s.id][st.key + '_기타'] || '';
@@ -687,7 +684,6 @@ function renderBreakdown(s) {
       });
     }
 
-    // reason textarea
     const rTa = rw?.querySelector('textarea');
     if (rTa) {
       rTa.value = answers[s.id][st.key + '_reason'] || '';
@@ -820,7 +816,6 @@ function submit() {
 
   fetch(ep, {
     method: 'POST',
-    // Apps Script는 Content-Type 없이 보내야 CORS preflight 없음
     ...(isGas ? {} : {headers: {'Content-Type':'application/json'}}),
     body: JSON.stringify(payload),
   })
