@@ -115,7 +115,7 @@
         <tr>
           <th>#</th>
           <th>이름</th>
-          <th>주당 건수</th>
+          <th>섭외 빈도</th>
           <th>단계별 소요 시간</th>
           <th>섭외 여정</th>
           <th>후보 수</th>
@@ -176,9 +176,24 @@ function renderAll(data) {
   renderTable(data);
 }
 
+function parseFreq(r) {
+  if (r.weeklyCount !== undefined) return r.weeklyCount;
+  const freq = String(r.requestFreq || '');
+  const m = freq.match(/^(\d+)/);
+  if (!m) return 0;
+  const n = parseInt(m[1]);
+  return freq.includes('month') ? +(n / 4.3).toFixed(1) : n;
+}
+
+function freqLabel(r) {
+  if (r.requestFreq) return String(r.requestFreq).replace('x/week','건/주').replace('x/month','건/월');
+  if (r.weeklyCount !== undefined) return r.weeklyCount + '건/주';
+  return '-';
+}
+
 function renderStats(data) {
   const n = data.length;
-  const avgWeekly = n ? (data.reduce((s,r)=>s+(r.weeklyCount||0),0)/n).toFixed(1) : 0;
+  const avgWeekly = n ? (data.reduce((s,r)=>s+parseFreq(r),0)/n).toFixed(1) : 0;
   const avgCand = n ? (data.reduce((s,r)=>s+(r.candidateCount||0),0)/n).toFixed(1) : 0;
   const html = [
     {label:'총 응답', val: n, unit:'명'},
@@ -236,7 +251,7 @@ function renderTable(data) {
     return `<tr>
       <td>${data.length - i}</td>
       <td>${esc(r.name||'익명')}</td>
-      <td>${r.weeklyCount ?? '-'}건</td>
+      <td>${freqLabel(r)}</td>
       <td>${Object.entries(r.timeBreakdown||{}).map(([k,v])=>`<span class="badge">${k}:${v}</span>`).join('')||'-'}</td>
       <td>${mats||'-'}</td>
       <td>${r.candidateCount ?? '-'}명</td>
