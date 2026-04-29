@@ -334,6 +334,13 @@ body{
   background:var(--green-bg);color:var(--green);
   border-color:var(--green-border);
 }
+.resp-stage{display:flex;flex-direction:column;gap:5px;}
+.resp-reason{
+  font-size:12px;color:var(--ink2);line-height:1.6;
+  background:var(--surface2);border-left:2px solid var(--accent2);
+  border-radius:0 6px 6px 0;padding:5px 10px;
+  max-width:480px;
+}
 .resp-journey{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
 .resp-freetext{
   background:var(--accent-lt);border-radius:8px;
@@ -742,10 +749,15 @@ function renderResponses(data) {
     const weekly = freqLabel(r);
     const unit = '';
     const tb = r.timeBreakdown || {};
-    const tbHtml = Object.entries(tb)
-      .filter(([k]) => !k.includes('_'))
-      .map(([k,v]) => `<span class="resp-badge">${esc(k)} · ${esc(v)}</span>`)
-      .join('');
+    const tbHtml = ['서칭','컨택','프로필','전달'].map(stage => {
+      const val = tb[stage]; if (!val) return '';
+      const displayVal = val === '기타' ? ((tb[stage+'_기타']||'').trim() || '기타') : val;
+      const reason = (tb[stage+'_reason']||'').trim();
+      return `<div class="resp-stage">
+        <span class="resp-badge">${esc(stage)} · ${esc(displayVal)}</span>
+        ${reason ? `<div class="resp-reason">${esc(reason)}</div>` : ''}
+      </div>`;
+    }).filter(Boolean).join('');
     const journey = r.journey||[];
     const journeyHtml = journey.map((j,idx) => `
       <span class="j-step"><span class="j-num">${idx+1}</span>${esc(j)}</span>
@@ -772,7 +784,7 @@ function renderResponses(data) {
       <div class="resp-body" id="${id}-body" role="region">
         ${tbHtml ? `<div class="resp-section">
           <div class="resp-section-lbl">단계별 소요 시간</div>
-          <div class="resp-badges">${tbHtml}</div>
+          <div class="resp-badges" style="flex-direction:column;align-items:flex-start;">${tbHtml}</div>
         </div>` : ''}
         ${journey.length ? `<div class="resp-section">
           <div class="resp-section-lbl">섭외 여정</div>
